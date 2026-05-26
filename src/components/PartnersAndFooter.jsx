@@ -45,7 +45,7 @@ const PartnersAndFooter = () => {
 
       {/* Simple Footer Links */}
       <div className="w-full py-6 px-8 flex flex-col md:flex-row justify-between items-center text-xs font-semibold text-gray-500 bg-[#cbd5c0]/60">
-        <span>Liquid Vitality @copyright 2026</span>
+        <span>Nectar Nexus @copyright 2026</span>
         <div className="flex gap-6 mt-4 md:mt-0">
           <a href="#" className="hover:text-black transition-colors">Home</a>
           <a href="#" className="hover:text-black transition-colors">About Us</a>

@@ -41,10 +41,10 @@ const Navbar = () => {
         {/* Brand Logo */}
         <div className="flex items-center gap-2 cursor-pointer group">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-500 ${scrolled ? 'bg-[#6db33f] text-white' : 'bg-premium-black text-white'}`}>
-            <span className="font-bold text-sm">LV</span>
+            <span className="font-bold text-sm">NN</span>
           </div>
           <span className={`text-xl font-black tracking-tight transition-colors duration-500 ${scrolled ? 'text-gray-900' : 'text-premium-black'}`}>
-            Liquid Vitality.
+            Nectar Nexus.
           </span>
         </div>
 

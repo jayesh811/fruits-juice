@@ -21,9 +21,36 @@ const LiquidCarousel = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [cartItems, setCartItems] = useState([]);
+  const [showPayment, setShowPayment] = useState(false);
+  const [paymentComplete, setPaymentComplete] = useState(false);
   
   const splashPathRef = useRef(null);
   const autoPlayRef = useRef();
+
+  const addToCart = (juice) => {
+    setCartItems((prev) => {
+      const existing = prev.find((item) => item.id === juice.id);
+      if (existing) {
+        return prev.map((item) => item.id === juice.id ? { ...item, quantity: item.quantity + 1 } : item);
+      }
+      return [...prev, { ...juice, quantity: 1 }];
+    });
+    setPaymentComplete(false);
+    setShowPayment(true);
+  };
+
+  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const totalPrice = cartItems.reduce((sum, item) => sum + item.quantity * parseFloat(item.price), 0).toFixed(2);
+
+  const handlePayment = () => {
+    setPaymentComplete(true);
+  };
+
+  const closePayment = () => {
+    setShowPayment(false);
+    setPaymentComplete(false);
+  };
 
   // SVG Morphing Paths
   const paths = {
@@ -90,6 +117,17 @@ const LiquidCarousel = () => {
       <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" preserveAspectRatio="none" viewBox="0 0 100 100">
         <path ref={splashPathRef} d={paths.initial} fill="transparent" />
       </svg>
+
+      {totalItems > 0 && (
+        <div className="absolute top-6 right-6 z-20">
+          <button
+            onClick={() => setShowPayment(true)}
+            className="rounded-full border border-white bg-black/80 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-white shadow-xl transition hover:bg-black"
+          >
+            Cart • {totalItems} item{totalItems > 1 ? 's' : ''} • ${totalPrice}
+          </button>
+        </div>
+      )}
 
       <div 
         className="relative z-10 w-full max-w-7xl px-4"
@@ -170,6 +208,7 @@ const LiquidCarousel = () => {
                     </div>
 
                     <button 
+                      onClick={() => isCenter && addToCart(juice)}
                       style={{ backgroundColor: isCenter ? juice.color : '#ccc' }}
                       className="mt-4 px-8 py-3 rounded-full text-white text-[10px] font-bold uppercase tracking-widest shadow-lg active:scale-95 transition-all"
                     >
@@ -200,6 +239,86 @@ const LiquidCarousel = () => {
           </div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {showPayment && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          >
+            <motion.div
+              initial={{ y: 24, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 24, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="w-full max-w-xl rounded-[2rem] bg-white p-6 shadow-2xl"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-widest text-gray-500">Payment Window</p>
+                  <h2 className="mt-2 text-2xl font-black text-gray-900">Your Cart</h2>
+                </div>
+                <button
+                  onClick={closePayment}
+                  className="rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 transition hover:bg-gray-100"
+                >
+                  Close
+                </button>
+              </div>
+
+              {paymentComplete ? (
+                <div className="mt-6 rounded-[2rem] bg-green-50 p-6 text-center">
+                  <p className="text-sm uppercase tracking-widest text-green-700">Payment confirmed</p>
+                  <h3 className="mt-3 text-xl font-black text-green-900">Thank you for your order!</h3>
+                  <p className="mt-2 text-sm text-green-700">Your juices are now on the way. Continue shopping or close this window.</p>
+                </div>
+              ) : (
+                <div className="mt-6 rounded-[2rem] border border-gray-100 bg-gray-50 p-6">
+                  {cartItems.length === 0 ? (
+                    <p className="text-sm text-gray-600">Your cart is empty. Add an item to start checkout.</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {cartItems.map((item) => (
+                        <div key={item.id} className="flex items-center justify-between gap-4 rounded-3xl bg-white p-4 shadow-sm">
+                          <div>
+                            <p className="font-semibold text-gray-900">{item.name}</p>
+                            <p className="text-xs uppercase tracking-widest text-gray-500">{item.quantity} × {item.volume}</p>
+                          </div>
+                          <p className="text-sm font-black text-gray-900">${(item.quantity * parseFloat(item.price)).toFixed(2)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="mt-6 flex items-center justify-between rounded-3xl bg-white p-4 shadow-sm">
+                    <span className="text-sm font-semibold text-gray-600">Total</span>
+                    <span className="text-xl font-black text-gray-900">${totalPrice}</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                {!paymentComplete && (
+                  <button
+                    onClick={handlePayment}
+                    className="rounded-full bg-gradient-to-r from-emerald-500 to-lime-500 px-6 py-3 text-sm font-black uppercase tracking-widest text-white shadow-lg transition hover:brightness-110"
+                  >
+                    Pay Now ${totalPrice}
+                  </button>
+                )}
+                <button
+                  onClick={closePayment}
+                  className="rounded-full border border-gray-200 bg-white px-6 py-3 text-sm font-semibold uppercase tracking-widest text-gray-700 transition hover:bg-gray-100"
+                >
+                  {paymentComplete ? 'Done' : 'Continue Shopping'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <style jsx global>{`
         body { background-color: #f8f8f8; }
